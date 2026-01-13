@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Customer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Dashboard Customer</h2>
+  <form id="orderForm">
+    <input type="text" id="items" placeholder="Item (contoh: Pizza, Burger)" required>
+    <input type="text" id="address" placeholder="Alamat Pengiriman" required>
+    <button type="submit">Pesan Delivery</button>
+  </form>
+  <button onclick="loadOrders()">Lihat Riwayat Pesanan</button>
+  <div id="orders"></div>
+  <button onclick="logout()">Logout</button>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const response = await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({
+          items: document.getElementById('items').value,
+          address: document.getElementById('address').value
+        })
+      });
+      const data = await response.json();
+      alert(data.message);
+    });
+
+    async function loadOrders() {
+      const response = await fetch('/orders', { headers: { 'Authorization': token } });
+      const data = await response.json();
+      let html = '<h3>Riwayat Pesanan:</h3><ul>';
+      data.orders.forEach(o => html += `<li>Item: ${o.items} - Status: ${o.status} - Alamat: ${o.address}</li>`);
+      html += '</ul>';
+      document.getElementById('orders').innerHTML = html;
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

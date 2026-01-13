@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Customer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Daftar Customer Baru</h2>
+  <form id="registerForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <input type="text" id="name" placeholder="Nama" required>
+    <input type="text" id="address" placeholder="Alamat" required>
+    <input type="text" id="phone" placeholder="Telepon" required>
+    <button type="submit">Daftar</button>
+  </form>
+  <p><a href="login.html">Sudah punya akun? Login</a></p>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value,
+          name: document.getElementById('name').value,
+          address: document.getElementById('address').value,
+          phone: document.getElementById('phone').value
+        })
+      });
+      const data = await response.json();
+      alert(data.message);
+      if (response.ok) window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
