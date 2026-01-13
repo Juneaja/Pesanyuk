@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Dashboard Admin</h2>
+  <button onclick="loadOrders()">Lihat Semua Pesanan</button>
+  <div id="orders"></div>
+  <button onclick="logout()">Logout</button>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    async function loadOrders() {
+      const response = await fetch('/orders', { headers: { 'Authorization': token } });
+      const data = await response.json();
+      let html = '<h3>Semua Pesanan:</h3><ul>';
+      data.orders.forEach(o => {
+        html += `<li>Customer: ${o.customerName} - Item: ${o.items} - Status: ${o.status} - Alamat: ${o.address}`;
+        if (o.status === 'pending') {
+          html += ` <select id="driver-${o.id}">`;
+          data.drivers.forEach(d => html += `<option value="${d.id}">${d.name}</option>`);
+          html += `</select> <button onclick="assignDriver(${o.id})">Assign Driver</button>`;
+        }
+        html += '</li>';
+      });
+      html += '</ul>';
+      document.getElementById('orders').innerHTML = html;
+    }
+
+    async function assignDriver(orderId) {
+      const driverId = document.getElementById(`driver-${orderId}`).value;
+      const response = await fetch(`/assign-driver/${orderId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ driverId })
+      });
+      const data = await response.json();
+      alert(data.message);
+      loadOrders();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

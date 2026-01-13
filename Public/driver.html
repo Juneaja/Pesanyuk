@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Driver</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Dashboard Driver</h2>
+  <button onclick="loadOrders()">Lihat Pesanan Saya</button>
+  <div id="orders"></div>
+  <button onclick="logout()">Logout</button>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    async function loadOrders() {
+      const response = await fetch('/orders', { headers: { 'Authorization': token } });
+      const data = await response.json();
+      let html = '<h3>Pesanan Assigned:</h3><ul>';
+      data.orders.forEach(o => {
+        html += `<li>Item: ${o.items} - Status: ${o.status} - Alamat: ${o.address}`;
+        if (o.status === 'assigned') {
+          html += ` <button onclick="updateStatus(${o.id}, 'picked_up')">Picked Up</button> <button onclick="updateStatus(${o.id}, 'delivered')">Delivered</button>`;
+        }
+        html += '</li>';
+      });
+      html += '</ul>';
+      document.getElementById('orders').innerHTML = html;
+    }
+
+    async function updateStatus(orderId, status) {
+      const response = await fetch(`/update-status/${orderId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ status })
+      });
+      const data = await response.json();
+      alert(data.message);
+      loadOrders();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
